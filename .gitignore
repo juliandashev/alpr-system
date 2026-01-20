@@ -14,6 +14,8 @@
 # Linker files
 *.ilk
 
+.git
+
 # Debugger Files
 *.pdb
 
@@ -39,3 +41,10 @@
 
 # debug information files
 *.dwo
+
+# Ignore all directories except src/
+*/
+!src/
+!data/
+!include/
+!app/
