@@ -20,9 +20,9 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # =====================
-# Set flags
+# Compiler flags
 # =====================
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 # =====================
 # Find OpenCV
@@ -31,11 +31,26 @@ set(OpenCV_DIR "/usr/lib/x86_64-linux-gnu/cmake/opencv4")
 find_package(OpenCV REQUIRED)
 
 # =====================
-# Add subdirectories
+# Add executable
 # =====================
-add_subdirectory(include)
-add_subdirectory(src)
-add_subdirectory(app)
+add_executable(${PROJECT_NAME} main.cc)
+
+# =====================
+# Link headers
+# =====================
+target_include_directories(${PROJECT_NAME}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# =====================
+# Link OpenCV
+# =====================
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+
+# =====================
+# Install binary
+# =====================
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 # =====================
 # Info
