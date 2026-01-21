@@ -73,7 +73,7 @@ function incremental-build() {
 
                 print-green "Install binary or library into root!\n"
 
-                sudo cmake --install . --prefix "/usr"                      && {
+                cmake --install . --prefix "../usr/"                      && {
                     print-green "CMake: Installed successfully!\n"
                 }                                                           || {
                     print-red "CMake: Installing failed!\n";

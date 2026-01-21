@@ -21,25 +21,38 @@ endif()
 
 # =====================
 # Compiler flags
+# Compiler flags
 # =====================
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # =====================
 # Find OpenCV
 # =====================
-set(OpenCV_DIR "/usr/lib/x86_64-linux-gnu/cmake/opencv4")
 find_package(OpenCV REQUIRED)
+
+# =====================
+# Source files
+# =====================
+set(SOURCES
+    main.cc
+    preprocess.cpp
+    detect_plates.cpp
+    detect_chars.cpp
+    possible_char.cpp
+    debug.cpp
+)
 
 # =====================
 # Add executable
 # =====================
-add_executable(${PROJECT_NAME} main.cc)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 # =====================
 # Link headers
 # =====================
 target_include_directories(${PROJECT_NAME}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${OpenCV_INCLUDE_DIRS}
 )
 
 # =====================
@@ -51,6 +64,11 @@ target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 # Install binary
 # =====================
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+# =====================
+# Add tools subdirectory
+# =====================
+add_subdirectory(tools)
 
 # =====================
 # Info

@@ -1,75 +1,73 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/ml/ml.hpp>
+#include <string>
+#include <vector>
 
-#include "main.hpp"
 #include "possible_char.hpp"
 #include "possible_plate.hpp"
-#include "preprocess.hpp"
 
-const int MIN_PIXEL_WIDTH = 2;
-const int MIN_PIXEL_HEIGHT = 8;
+namespace char_detection {
+// Processing constants
+constexpr double PLATE_SCALE_FACTOR = 1.6;
 
-const double MIN_ASPECT_RATIO = 0.25;
-const double MAX_ASPECT_RATIO = 1.0;
+// Minimum character dimensions
+constexpr int MIN_PIXEL_WIDTH = 2;
+constexpr int MIN_PIXEL_HEIGHT = 8;
+constexpr int MIN_PIXEL_AREA = 80;
+constexpr double MIN_ASPECT_RATIO = 0.25;
+constexpr double MAX_ASPECT_RATIO = 1.0;
 
-const int MIN_PIXEL_AREA = 80;
+// Character grouping parameters (tuned for 8-character plates)
+constexpr double MIN_DIAG_SIZE_MULTIPLE_AWAY = 0.3;
+constexpr double MAX_DIAG_SIZE_MULTIPLE_AWAY =
+    10.0;  // Increased from 5.0 for longer plates
+constexpr double MAX_CHANGE_IN_AREA = 0.6;  // Increased from 0.5
+constexpr double MAX_CHANGE_IN_WIDTH = 0.8;
+constexpr double MAX_CHANGE_IN_HEIGHT =
+    0.4;  // Increased from 0.2 (was too strict)
+constexpr double MAX_ANGLE_BETWEEN_CHARS = 15.0;  // Increased from 12.0
+constexpr int MIN_MATCHING_CHARS = 3;
 
-// constants for comparing two chars
-const double MIN_DIAG_SIZE_MULTIPLE_AWAY = 0.3;
-const double MAX_DIAG_SIZE_MULTIPLE_AWAY = 5.0;
+// Character recognition
+constexpr int RESIZED_CHAR_WIDTH = 20;
+constexpr int RESIZED_CHAR_HEIGHT = 30;
+constexpr int MIN_CONTOUR_AREA = 100;
+}  // namespace char_detection
 
-const double MAX_CHANGE_IN_AREA = 0.5;
+extern cv::Ptr<cv::ml::KNearest> knn;
 
-const double MAX_CHANGE_IN_WIDTH = 0.8;
-const double MAX_CHANGE_IN_HEIGHT = 0.2;
+bool load_knn_data_and_train_knn();
 
-const double MAX_ANGLE_BETWEEN_CHARS = 12.0;
+std::vector<PossiblePlate> detect_chars_in_plates(
+    std::vector<PossiblePlate>& plates);
+std::vector<PossibleChar> find_possible_chars_in_plate(cv::Mat& color_image,
+                                                       cv::Mat& threshold);
+bool is_possible_char(const PossibleChar& character);
 
-// other constants
-const int MIN_NUMBER_OF_MATCHING_CHARS = 3;
+// Color filtering for plate characters
+std::vector<PossibleChar> filter_chars_by_color(
+    std::vector<PossibleChar>& chars);
 
-const int RESIZED_CHAR_IMAGE_WIDTH = 20;
-const int RESIZED_CHAR_IMAGE_HEIGHT = 30;
+std::vector<std::vector<PossibleChar>> find_matching_char_groups(
+    const std::vector<PossibleChar>& chars);
+std::vector<PossibleChar> find_matching_chars(
+    const PossibleChar& character, const std::vector<PossibleChar>& chars);
 
-const int MIN_CONTOUR_AREA = 100;
+double distance_between_chars(const PossibleChar& first,
+                              const PossibleChar& second);
+double angle_between_chars(const PossibleChar& first,
+                           const PossibleChar& second);
 
-// external global variables
-// //////////////////////////////////////////////////////////////////////
-extern const bool blnShowSteps;
-extern cv::Ptr<cv::ml::KNearest> kNearest;
-
-// function prototypes
-// ////////////////////////////////////////////////////////////////////////////
-
-bool loadKNNDataAndTrainKNN(void);
-
-std::vector<PossiblePlate> detectCharsInPlates(
-    std::vector<PossiblePlate>& vectorOfPossiblePlates);
-
-std::vector<PossibleChar> findPossibleCharsInPlate(cv::Mat& imgGrayscale,
-                                                   cv::Mat& imgThresh);
-
-bool checkIfPossibleChar(PossibleChar& possibleChar);
-
-std::vector<std::vector<PossibleChar> > findVectorOfVectorsOfMatchingChars(
-    const std::vector<PossibleChar>& vectorOfPossibleChars);
-
-std::vector<PossibleChar> findVectorOfMatchingChars(
-    const PossibleChar& possibleChar,
-    const std::vector<PossibleChar>& vectorOfChars);
-
-double distanceBetweenChars(const PossibleChar& firstChar,
-                            const PossibleChar& secondChar);
-
-double angleBetweenChars(const PossibleChar& firstChar,
-                         const PossibleChar& secondChar);
-
-std::vector<PossibleChar> removeInnerOverlappingChars(
-    std::vector<PossibleChar>& vectorOfMatchingChars);
-
-std::string recognizeCharsInPlate(
-    cv::Mat& imgThresh, std::vector<PossibleChar>& vectorOfMatchingChars);
+std::vector<PossibleChar> remove_overlapping_chars(
+    std::vector<PossibleChar>& chars);
+std::vector<PossibleChar> remove_chars_with_large_gaps(
+    std::vector<PossibleChar>& chars);
+std::string recognize_chars_in_plate(cv::Mat& threshold,
+                                     std::vector<PossibleChar>& chars);
